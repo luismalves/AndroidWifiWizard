@@ -52,22 +52,22 @@
         <framework src="NetworkExtension.framework" />
             
         <!-- Add HotspotConfiguration & NetworkExtension Capabilities  -->
-        <config-file parent="com.apple.developer.networking.HotspotConfiguration" target="*/Entitlements-Debug.plist">
+        <config-file parent="com.apple.developer.networking.HotspotConfiguration" target="*/Entitlements-Debug.plist" mode="add">
             <true/>
         </config-file>
-        <config-file parent="com.apple.developer.networking.HotspotConfiguration" target="*/Entitlements-Release.plist">
+        <config-file parent="com.apple.developer.networking.HotspotConfiguration" target="*/Entitlements-Release.plist" mode="add">
                  <true/>
         </config-file>
-        <config-file parent="com.apple.developer.networking.networkextension" target="*/Entitlements-Debug.plist">
+        <config-file parent="com.apple.developer.networking.networkextension" target="*/Entitlements-Debug.plist" mode="add">
                 <array/>
         </config-file>
-        <config-file parent="com.apple.developer.networking.networkextension" target="*/Entitlements-Release.plist">
+        <config-file parent="com.apple.developer.networking.networkextension" target="*/Entitlements-Release.plist" mode="add">
                 <array/>
         </config-file>
-	<config-file parent="com.apple.developer.networking.wifi-info" target="*/Entitlements-Debug.plist">
+	<config-file parent="com.apple.developer.networking.wifi-info" target="*/Entitlements-Debug.plist" mode="add">
                 <true/>
         </config-file>
-        <config-file parent="com.apple.developer.networking.wifi-info" target="*/Entitlements-Release.plist">
+        <config-file parent="com.apple.developer.networking.wifi-info" target="*/Entitlements-Release.plist" mode="add">
                 <true/>
         </config-file>
             
