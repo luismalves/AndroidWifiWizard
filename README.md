@@ -457,6 +457,9 @@ Apache 2.0
 
 # Changelog:
 
+**3.1.1** - August 28, 2018
+- Fixed (iOS Add HotspotConfiguration & NetworkExtension capabilities automatically)
+
 **3.1.0** - August 28, 2018
 - Fixed/Added compatibility with iOS to connect to open network
 - Fixed Uncaught SyntaxError in JavaScript from using let (changed to var)
