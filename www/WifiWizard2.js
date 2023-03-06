@@ -8,7 +8,7 @@
  *      http://www.apache.org/licenses/LICENSE-2.0
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express oWPA2r implied.
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
@@ -86,6 +86,10 @@ var WifiWizard2 = {
                 if (typeof wifi.auth == "object") {
 
                     switch (wifi.auth.algorithm) {
+		    	case "WPA2":
+                            networkInformation.push("WPA2");
+                            networkInformation.push(wifi.auth.password);
+                            break;
                         case "WPA":
                             networkInformation.push("WPA");
                             networkInformation.push(wifi.auth.password);
@@ -123,11 +127,12 @@ var WifiWizard2 = {
     /**
      * Remove wifi network configuration
      * @param {string|int} [SSID]
+     * @param {string} [algorithm]
      * @returns {Promise<any>}
      */
-    remove: function (SSID) {
+    remove: function (SSID, algorithm) {
         return new Promise(function (resolve, reject) {
-            cordova.exec(resolve, reject, "WifiWizard2", "remove", [WifiWizard2.formatWifiString(SSID)]);
+            cordova.exec(resolve, reject, "WifiWizard2", "remove", [WifiWizard2.formatWifiString(SSID), algorithm || ""]);
         });
     },
 
@@ -161,8 +166,11 @@ var WifiWizard2 = {
             WifiWizard2.add(wifiConfig).then(function (newNetID) {
 
                 // Successfully updated or added wifiConfig
-                cordova.exec(resolve, reject, "WifiWizard2", "connect", [WifiWizard2.formatWifiString(SSID), bindAll]);
-
+                if(device.platform === "Android" && !(parseInt(device.version.split('.')[0]) >= 10)) {
+					cordova.exec(resolve, reject, "WifiWizard2", "connect", [WifiWizard2.formatWifiString(SSID), bindAll]);
+				} else {
+                    resolve(newNetID);
+                }
                 // Catch error adding/updating network
             }).catch(function (error) {
 
@@ -172,7 +180,9 @@ var WifiWizard2 = {
 
                     // This error above should only be returned when the add method was able to pull a network ID (as it tries to update instead of adding)
                     // Lets go ahead and attempt to connect to that SSID (using the existing wifi configuration)
-                    cordova.exec(resolve, reject, "WifiWizard2", "connect", [WifiWizard2.formatWifiString(SSID), bindAll]);
+                    if(device.platform === "Android" && !(parseInt(device.version.split('.')[0]) >= 10)) {
+						cordova.exec(resolve, reject, "WifiWizard2", "connect", [WifiWizard2.formatWifiString(SSID), bindAll]);
+					}
 
                 } else {
 
@@ -192,13 +202,14 @@ var WifiWizard2 = {
      * call WifiWizard2.disable() instead of disconnect.
      *
      * @param {string|int} [SSID=all]
+     * @param {string} [algorithm]
      * @returns {Promise<any>}
      */
-    disconnect: function (SSID) {
+    disconnect: function (SSID, algorithm) {
         return new Promise(function (resolve, reject) {
 
             if (SSID) {
-                cordova.exec(resolve, reject, "WifiWizard2", "disconnectNetwork", [WifiWizard2.formatWifiString(SSID)]);
+                cordova.exec(resolve, reject, "WifiWizard2", "disconnectNetwork", [WifiWizard2.formatWifiString(SSID), algorithm || ""]);
             } else {
                 cordova.exec(resolve, reject, "WifiWizard2", "disconnect", []);
             }
@@ -211,24 +222,26 @@ var WifiWizard2 = {
      * @param {string|int} [SSID]
      * @param {boolean} [bindAll=false]                            Whether or not to bind all network requests to this wifi network
      * @param {boolean} [waitForConnection=false]        Whether or not to wait before resolving promise until connection to wifi is verified
+     * @param {string} [algorithm]
      * @returns {Promise<any>}
      */
-    enable: function (SSID, bindAll, waitForConnection) {
+    enable: function (SSID, bindAll, waitForConnection, algorithm) {
         return new Promise(function (resolve, reject) {
             bindAll = bindAll ? true : false;
             waitForConnection = waitForConnection ? true : false;
-            cordova.exec(resolve, reject, "WifiWizard2", "enable", [WifiWizard2.formatWifiString(SSID), bindAll, waitForConnection]);
+            cordova.exec(resolve, reject, "WifiWizard2", "enable", [WifiWizard2.formatWifiString(SSID), bindAll, waitForConnection, algorithm || ""]);
         });
     },
 
     /**
      * Disable Network
      * @param {string|int} [SSID]
+     * @param {string} [algorithm]
      * @returns {Promise<any>}
      */
-    disable: function (SSID) {
+    disable: function (SSID, algorithm) {
         return new Promise(function (resolve, reject) {
-            cordova.exec(resolve, reject, "WifiWizard2", "disable", [WifiWizard2.formatWifiString(SSID)]);
+            cordova.exec(resolve, reject, "WifiWizard2", "disable", [WifiWizard2.formatWifiString(SSID), algorithm || ""]);
         });
     },
 
@@ -343,6 +356,26 @@ var WifiWizard2 = {
     },
 
     /**
+	 * Unbind Network
+	 * @returns {Promise<any>}
+	 */
+	resetBindAll: function () {
+		return new Promise( function( resolve, reject ){
+			cordova.exec(resolve, reject, "WifiWizard2", "resetBindAll", []);
+		});
+	},
+
+	/**
+	 * Bind Network
+	 * @returns {Promise<any>}
+	 */
+	setBindAll: function () {
+		return new Promise( function( resolve, reject ){
+			cordova.exec(resolve, reject, "WifiWizard2", "setBindAll", []);
+		});
+    },
+    
+    /**
      * Get Wifi Router IP from DHCP
      * @returns {Promise<any>}
      */
@@ -375,11 +408,12 @@ var WifiWizard2 = {
     /**
      * Get Network ID from SSID
      * @param {string|int} [SSID]
+     * @param {string} [algorithm]
      * @returns {Promise<any>}
      */
-    getSSIDNetworkID: function (SSID) {
+    getSSIDNetworkID: function (SSID, algorithm) {
         return new Promise(function (resolve, reject) {
-            cordova.exec(resolve, reject, "WifiWizard2", "getSSIDNetworkID", [WifiWizard2.formatWifiString(SSID)]);
+            cordova.exec(resolve, reject, "WifiWizard2", "getSSIDNetworkID", [WifiWizard2.formatWifiString(SSID), algorithm || ""]);
         });
     },
 
@@ -463,6 +497,54 @@ var WifiWizard2 = {
     },
 
     /**
+     * Check if we can connect via HTTP current WiFi router IP address
+     * @returns {Promise<any>}
+     */
+    canConnectToRouter: function () {
+        return new Promise(function (resolve, reject) {
+
+            cordova.exec(
+                // Cordova can only return strings to JS, and the underlying plugin
+                // sends a "1" for true and "0" for false.
+                function (result) {
+
+                    if (result == "1") {
+                        resolve("CAN_CONNECT_TO_ROUTER");
+                    } else {
+                        reject("UNABLE_TO_CONNECT_TO_ROUTER");
+                    }
+
+                },
+                reject, "WifiWizard2", "canConnectToRouter", []
+            );
+
+        });
+    },
+    /**
+     * Check if current WiFi connection can connect to internet (checks connection to google.com)
+     * @returns {Promise<any>}
+     */
+    canConnectToInternet: function () {
+        return new Promise(function (resolve, reject) {
+
+            cordova.exec(
+                // Cordova can only return strings to JS, and the underlying plugin
+                // sends a "1" for true and "0" for false.
+                function (result) {
+
+                    if (result == "1") {
+                        resolve("IS_CONNECTED_TO_INTERNET");
+                    } else {
+                        reject("NOT_CONNECTED_TO_INTERNET");
+                    }
+
+                },
+                reject, "WifiWizard2", "canConnectToInternet", []
+            );
+
+        });
+    },
+    /**
      * Request ACCESS_FINE_LOCATION permission
      *
      * This permission is required by Android to return scan results, you can manually request it prior to running `scan`
@@ -493,6 +575,12 @@ var WifiWizard2 = {
             // open network
             wifiConfig.auth = {
                 algorithm: "NONE"
+            };
+        } else if (algorithm === "WPA2") {
+            wifiConfig.auth = {
+                algorithm: algorithm,
+                password: WifiWizard2.formatWifiString(password)
+                // Other parameters can be added depending on algorithm.
             };
         } else if (algorithm === "WPA") {
             wifiConfig.auth = {
@@ -548,12 +636,17 @@ var WifiWizard2 = {
         }
         ssid = ssid.trim();
 
-        if (ssid.charAt(0) != '"') {
-            ssid = '"' + ssid;
-        }
+        if(device.platform === "Android" && parseInt(device.version.split('.')[0]) >= 10){
+            // Do not add "" To the SSID, as the new method for Android Q does not support it
+        } 
+        else {
+            if (ssid.charAt(0) != '"') {
+                ssid = '"' + ssid;
+            }
 
-        if (ssid.charAt(ssid.length - 1) != '"') {
-            ssid = ssid + '"';
+            if (ssid.charAt(ssid.length - 1) != '"') {
+                ssid = ssid + '"';
+            }
         }
 
         return ssid;

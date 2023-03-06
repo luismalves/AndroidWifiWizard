@@ -4,4 +4,5 @@
 
 /src/ios/iOSWifiConnectSwift.swift
 /node_modules/
-.idea/
+.idea
+.vscode
