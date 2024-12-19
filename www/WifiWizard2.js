@@ -14,54 +14,7 @@
  */
 
 var WifiWizard2 = {
-
-	/**
-     * Connect to network on iOS device
-	 * @param ssid
-	 * @param ssidPassword      Password if connecting to WPA/WPA2 network (omit or use false to connect to open network)
-	 * @returns {Promise}
-	 */
-	iOSConnectNetwork: function (ssid, ssidPassword) {
-
-        return new Promise(function (resolve, reject) {
-            if( ssidPassword === undefined || ! ssidPassword || ssidPassword.length < 1 ){
-                // iOS connect open network
-	            cordova.exec(resolve, reject, "WifiWizard2", "iOSConnectOpenNetwork", [{ "Ssid": ssid }]);
-
-            } else if( ssidPassword !== undefined && ssidPassword.length > 0 && ssidPassword.length < 8 ){
-                // iOS pass length does not meet requirements (min 8 chars for WPA/WPA2)
-                reject("WPA/WPA2 password length must be at least 8 characters in length!");
-
-            } else {
-                // iOS connect to WPA/WPA2 network
-              cordova.exec(resolve, reject, "WifiWizard2", "iOSConnectNetwork", [
-                {
-                  "Ssid": ssid,
-                  "Password": ssidPassword
-                }]
-              );
-            }
-
-        });
-
-    },
-
-	/**
-     * Disconnect from SSID on iOS device
-	 * @param ssid
-	 * @returns {Promise}
-	 */
-	iOSDisconnectNetwork: function (ssid) {
-        return new Promise(function (resolve, reject) {
-
-            cordova.exec(resolve, reject, "WifiWizard2", "iOSDisconnectNetwork", [
-                {
-                    "Ssid": ssid
-                }]);
-
-        });
-    },
-
+	
     /**
      * Add wifi network configuration
      * @param wifi  Must be object created by formatWifiConfig()
