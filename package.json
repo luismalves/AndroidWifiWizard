@@ -4,7 +4,8 @@
   "cordova": {
     "id": "cordova-plugin-wifiwizard2",
     "platforms": [
-      "android"
+      "android",
+      "ios"
     ]
   },
   "repository": {
