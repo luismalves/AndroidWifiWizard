@@ -177,67 +177,58 @@ public class WifiWizard2 extends CordovaPlugin {
         }
 
         // Actions that do not require WiFi to be enabled
-        switch (action) {
-            case IS_LOCATION_ENABLED -> {
-                this.isLocationEnabled(callbackContext);
+        // Actions that do not require WiFi to be enabled
+        if (action.equals(IS_LOCATION_ENABLED)) {
+            this.isLocationEnabled(callbackContext);
+            return true;
+        } else if (action.equals(IS_WIFI_ENABLED)) {
+            this.isWifiEnabled(callbackContext);
+            return true;
+        } else if (action.equals(SWITCH_TO_LOCATION_SETTINGS)) {
+            this.switchToLocationSettings();
+            callbackContext.success();
+            return true;
+        } else if (action.equals(SET_WIFI_ENABLED)) {
+            this.setWifiEnabled(callbackContext, data);
+            return true;
+        } else if (action.equals(REQUEST_FINE_LOCATION)) {
+            this.requestLocationPermission(LOCATION_REQUEST_CODE);
+            return true;
+        } else if (action.equals(GET_WIFI_ROUTER_IP_ADDRESS)) {
+
+            String ip = getWiFiRouterIP();
+
+            if (ip == null || ip.equals("0.0.0.0")) {
+                callbackContext.error("NO_VALID_ROUTER_IP_FOUND");
+                return true;
+            } else {
+                callbackContext.success(ip);
                 return true;
             }
-            case IS_WIFI_ENABLED -> {
-                this.isWifiEnabled(callbackContext);
+
+        } else if (action.equals(GET_WIFI_IP_ADDRESS) || action.equals(GET_WIFI_IP_INFO)) {
+            String[] ipInfo = getWiFiIPAddress();
+            String ip = ipInfo[0];
+            String subnet = ipInfo[1];
+            if (ip == null || ip.equals("0.0.0.0")) {
+                callbackContext.error("NO_VALID_IP_IDENTIFIED");
                 return true;
             }
-            case SWITCH_TO_LOCATION_SETTINGS -> {
-                this.switchToLocationSettings();
-                callbackContext.success();
+
+            // Return only IP address
+            if (action.equals(GET_WIFI_IP_ADDRESS)) {
+                callbackContext.success(ip);
                 return true;
             }
-            case SET_WIFI_ENABLED -> {
-                this.setWifiEnabled(callbackContext, data);
-                return true;
-            }
-            case REQUEST_FINE_LOCATION -> {
-                this.requestLocationPermission(LOCATION_REQUEST_CODE);
-                return true;
-            }
-            case GET_WIFI_ROUTER_IP_ADDRESS -> {
 
-                String ip = getWiFiRouterIP();
+            // Return Wifi IP Info (subnet and IP as JSON object)
+            JSONObject result = new JSONObject();
 
-                if (ip == null || ip.equals("0.0.0.0")) {
-                    callbackContext.error("NO_VALID_ROUTER_IP_FOUND");
-                    return true;
-                } else {
-                    callbackContext.success(ip);
-                    return true;
-                }
+            result.put("ip", ip);
+            result.put("subnet", subnet);
 
-            }
-            case GET_WIFI_IP_ADDRESS, GET_WIFI_IP_INFO -> {
-                String[] ipInfo = getWiFiIPAddress();
-                String ip = ipInfo[0];
-                String subnet = ipInfo[1];
-                if (ip == null || ip.equals("0.0.0.0")) {
-                    callbackContext.error("NO_VALID_IP_IDENTIFIED");
-                    return true;
-                }
-
-                // Return only IP address
-                if (action.equals(GET_WIFI_IP_ADDRESS)) {
-                    callbackContext.success(ip);
-                    return true;
-                }
-
-                // Return Wifi IP Info (subnet and IP as JSON object)
-                JSONObject result = new JSONObject();
-
-                result.put("ip", ip);
-                result.put("subnet", subnet);
-
-                callbackContext.success(result);
-                return true;
-            }
-            default -> {
-            }
+            callbackContext.success(result);
+            return true;
         }
 
         boolean wifiIsEnabled = verifyWifiEnabled();
