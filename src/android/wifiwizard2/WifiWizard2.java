@@ -2009,7 +2009,7 @@ public class WifiWizard2 extends CordovaPlugin {
             try {
                 String SSID = data.getString(0);
                 String PASS = data.getString(1, "");
-                String Algorithm = data.getString(2);
+                String Algorithm = data.getString(2, "");
                 Boolean isHidden = data.getBoolean(3, false);
 
                 Log.d(TAG, "WifiWizard2: 211 - data: " + data);
