@@ -297,9 +297,7 @@ public class WifiWizard2 extends CordovaPlugin {
                 // @see https://cordova.apache.org/docs/en/latest/guide/platforms/android/plugin.html
                 return false;
             }
-
         }
-
         return true;
     }
 
@@ -1999,9 +1997,9 @@ public class WifiWizard2 extends CordovaPlugin {
 
             try {
                 String SSID = data.getString(0);
-                String PASS = data.getString(1, "");
-                String Algorithm = data.getString(2, "");
-                Boolean isHidden = data.getBoolean(3, false);
+                String PASS = data.getString(1);
+                String Algorithm = data.getString(2);
+                Boolean isHidden = data.getBoolean(3);
 
                 Log.d(TAG, "WifiWizard2: 211 - data: " + data);
                 Log.d(TAG, "WifiWizard2: 211 - ssid: " + SSID);
