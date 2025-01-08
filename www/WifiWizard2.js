@@ -114,6 +114,7 @@ var WifiWizard2 = {
           algorithm || "",
           isHiddenSSID,
         ]);
+        return;
       }
 
       var wifiConfig = WifiWizard2.formatWifiConfig(
