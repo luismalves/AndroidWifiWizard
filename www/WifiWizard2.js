@@ -108,6 +108,7 @@ var WifiWizard2 = {
         device.platform === "Android" &&
         !(parseInt(device.version.split(".")[0]) >= 10)
       ) {
+        console.log("Entering specifier connection action ...");
         cordova.exec(resolve, reject, "WifiWizard2", "specifierConnection", [
           WifiWizard2.formatWifiString(SSID),
           password || "",
