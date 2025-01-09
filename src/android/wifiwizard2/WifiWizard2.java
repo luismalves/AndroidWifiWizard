@@ -1967,12 +1967,12 @@ public class WifiWizard2 extends CordovaPlugin {
      *  DOC: https://developer.android.com/reference/android/net/wifi/WifiNetworkSpecifier.Builder
      */
     private void specifierConnection(CallbackContext callbackContext, JSONArray data) {
-        Log.d(TAG, "WifiWizard2: 211 - Api >= 29 WiFi connection specifier your api version: " + API_VERSION);
+        Log.d(TAG, "WifiWizard2: Entered specifierConnection - Api >= 29 WiFi connection specifier your api version: " + API_VERSION);
 
         if (API_VERSION >= 29) {
             if (!validateData(data)) {
                 callbackContext.error("SPECIFIER_INVALID_DATA");
-                Log.d(TAG, "WifiWizard2: 211 - specifierConnection invalid data.");
+                Log.d(TAG, "WifiWizard2: specifierConnection invalid data.");
                 return;
             }
 
@@ -1982,12 +1982,13 @@ public class WifiWizard2 extends CordovaPlugin {
                 String Algorithm = data.getString(2);
                 Boolean isHidden = data.getBoolean(3);
 
-                Log.d(TAG, "WifiWizard2: 211 - data: " + data);
-                Log.d(TAG, "WifiWizard2: 211 - ssid: " + SSID);
-                Log.d(TAG, "WifiWizard2: 211 - pass: " + PASS);
-                Log.d(TAG, "WifiWizard2: 211 - Algorithm: " + Algorithm);
-                Log.d(TAG, "WifiWizard2: 211 - ishidden: " + isHidden);
+                Log.d(TAG, "WifiWizard2: data: " + data);
+                Log.d(TAG, "WifiWizard2: ssid: " + SSID);
+                Log.d(TAG, "WifiWizard2: pass: " + PASS);
+                Log.d(TAG, "WifiWizard2: Algorithm: " + Algorithm);
+                Log.d(TAG, "WifiWizard2: ishidden: " + isHidden);
 
+                // WifiNetworkSpecifier builder
                 WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder();
                 builder.setSsid(SSID);
 
@@ -2003,9 +2004,10 @@ public class WifiWizard2 extends CordovaPlugin {
                     builder.setIsHiddenSsid(true);
                 }
 
+                // WifiNetworkSpecifier
                 WifiNetworkSpecifier wifiNetworkSpecifier = builder.build();
 
-                //--
+                // NetworkRequest Builder
                 NetworkRequest.Builder networkRequestBuilder1 = new NetworkRequest.Builder();
 
                 networkRequestBuilder1.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
@@ -2018,30 +2020,35 @@ public class WifiWizard2 extends CordovaPlugin {
                     networkRequestBuilder1.setNetworkSpecifier(wifiNetworkSpecifier);
                 }
 
+                // Network Request
                 NetworkRequest networkRequest = networkRequestBuilder1.build();
+
                 ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
                     @Override
                     public void onAvailable(Network network) {
                         super.onAvailable(network);
-                        Log.d(TAG, "WifiWizard2: 211 onAvailable:" + network);
+                        Log.d(TAG, "WifiWizard2: Entered onAvailable:" + network);
 
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             connectivityManager.bindProcessToNetwork(network);
                         }
 
                         NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(network);
+
+                        Log.d(TAG, "WifiWizard2: Network capabilities detected for network - " + network + " - [" + networkCapabilities + "]");
+
                         if (networkCapabilities != null && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
                             // Network is available and validated
                             callbackContext.success();
                         } else {
-                            callbackContext.error("Connected with missing capability: NET_CAPABILITY_VALIDATED");
+                            callbackContext.error("WifiWizard2: Connected with missing capability - NET_CAPABILITY_VALIDATED");
                         }
                     }
 
                     @Override
                     public void onUnavailable() {
                         super.onUnavailable();
-                        Log.d(TAG, "WifiWizard2: 211 onUnavailable");
+                        Log.d(TAG, "WifiWizard2: Entered onUnavailable");
                         callbackContext.error("SPECIFIER_NETWORK_UNAVAILABLE");
                     }
                 };
@@ -2053,7 +2060,7 @@ public class WifiWizard2 extends CordovaPlugin {
             }
         } else {
             callbackContext.error("SPECIFIER_INVALID_API_VERSION");
-            Log.d(TAG, "WifiWizard2: 211 - specifierConnection invalid Android API Version is below as needed.");
+            Log.d(TAG, "WifiWizard2: specifierConnection invalid Android API Version is below as needed.");
         }
     }
 }
