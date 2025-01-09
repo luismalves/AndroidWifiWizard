@@ -40,6 +40,7 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.SupplicantState;
 import android.net.ConnectivityManager;
+import android.net.wifi.WifiNetworkSuggestion;
 
 import android.location.LocationManager;
 import android.provider.Settings;
