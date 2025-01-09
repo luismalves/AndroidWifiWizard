@@ -2028,8 +2028,8 @@ public class WifiWizard2 extends CordovaPlugin {
                 NetworkRequest.Builder networkRequestBuilder1 = new NetworkRequest.Builder();
 
                 networkRequestBuilder1.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                        .addTransportType(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-                        .addTransportType(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
+                        .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+                //.addCapability (NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     networkRequestBuilder1.setNetworkSpecifier(wifiNetworkSpecifier);
