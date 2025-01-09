@@ -18,6 +18,7 @@ import org.apache.cordova.*;
 
 import java.util.List;
 import java.lang.InterruptedException;
+import java.util.ArrayList;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -747,9 +748,9 @@ public class WifiWizard2 extends CordovaPlugin {
 //            }
 //
 //            if (API_VERSION >= 26) {
+    
 
-
-        ////                wifiManager.disconnect();
+    ////                wifiManager.disconnect();
 //            } else {
 //                wifiManager.disableNetwork(networkIdToConnect);
 //            }
