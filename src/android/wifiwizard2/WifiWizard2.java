@@ -707,36 +707,63 @@ public class WifiWizard2 extends CordovaPlugin {
             return;
         }
 
-        int networkIdToConnect = ssidToNetworkId(ssidToConnect);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
+                    .setSsid(ssidToConnect)
+                    .setPriority(999)
+                    .build();
 
-        if (networkIdToConnect > -1) {
-            // We disable the network before connecting, because if this was the last connection before
-            // a disconnect(), this will not reconnect.
+            List<WifiNetworkSuggestion> suggestions = new ArrayList<>();
+            suggestions.add(suggestion);
 
-            Log.d(TAG, "Valid networkIdToConnect: attempting connection");
-
-            // Bind all requests to WiFi network (only necessary for Lollipop+ - API 21+)
-            if (bindAll.equals("true")) {
-                registerBindALL(networkIdToConnect);
+            int status = wifiManager.addNetworkSuggestions(suggestions);
+            if (status != WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
+                // Handle error
+                callbackContext.error("STATUS_NETWORK_SUGGESTIONS_SUCCESS");
             }
-
-            if (API_VERSION >= 26) {
-//                wifiManager.disconnect();
-            } else {
-                wifiManager.disableNetwork(networkIdToConnect);
-            }
-
-            wifiManager.enableNetwork(networkIdToConnect, true);
-
-            if (API_VERSION >= 26) {
-//        wifiManager.reassociate();
-            }
-
-            new ConnectAsync().execute(callbackContext, networkIdToConnect);
-
         } else {
-            callbackContext.error("INVALID_NETWORK_ID_TO_CONNECT");
+            // Fallback for older devices
+            WifiConfiguration wifiConfig = new WifiConfiguration();
+            wifiConfig.SSID = String.format("\"%s\"", ssidToConnect);
+
+            int netId = wifiManager.addNetwork(wifiConfig);
+            wifiManager.disconnect();
+            wifiManager.enableNetwork(netId, true);
+            wifiManager.reconnect();
         }
+
+//        int networkIdToConnect = ssidToNetworkId(ssidToConnect);
+//
+//        if (networkIdToConnect > -1) {
+//            // We disable the network before connecting, because if this was the last connection before
+//            // a disconnect(), this will not reconnect.
+//
+//            Log.d(TAG, "Valid networkIdToConnect: attempting connection");
+//
+//            // Bind all requests to WiFi network (only necessary for Lollipop+ - API 21+)
+//            if (bindAll.equals("true")) {
+//                registerBindALL(networkIdToConnect);
+//            }
+//
+//            if (API_VERSION >= 26) {
+
+
+        ////                wifiManager.disconnect();
+//            } else {
+//                wifiManager.disableNetwork(networkIdToConnect);
+//            }
+//
+//            wifiManager.enableNetwork(networkIdToConnect, true);
+//
+//            if (API_VERSION >= 26) {
+////        wifiManager.reassociate();
+//            }
+//
+//            new ConnectAsync().execute(callbackContext, networkIdToConnect);
+//
+//        } else {
+//            callbackContext.error("INVALID_NETWORK_ID_TO_CONNECT");
+//        }
     }
 
     /**
@@ -1005,7 +1032,8 @@ public class WifiWizard2 extends CordovaPlugin {
                 JSONObject lvl = new JSONObject();
                 try {
                     lvl.put("level", level);
-                    lvl.put("SSID", scan.SSID);
+                    lvl.put("SSID_Deprecated", scan.SSID);
+                    lvl.put("SSID", scan.getWifiSsid().toString());
                     lvl.put("BSSID", scan.BSSID);
                     lvl.put("frequency", scan.frequency);
                     lvl.put("capabilities", scan.capabilities);
@@ -2029,10 +2057,6 @@ public class WifiWizard2 extends CordovaPlugin {
                         super.onAvailable(network);
                         Log.d(TAG, "WifiWizard2: Entered onAvailable:" + network);
 
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                            connectivityManager.bindProcessToNetwork(network);
-                        }
-
                         NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(network);
 
                         Log.d(TAG, "WifiWizard2: Network capabilities detected for network - " + network + " - [" + networkCapabilities + "]");
@@ -2040,7 +2064,9 @@ public class WifiWizard2 extends CordovaPlugin {
                         if (networkCapabilities != null && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
                             // Network is available and validated
                             callbackContext.success();
-                            connectivityManager.requestNetwork(networkRequest, networkCallback);
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                connectivityManager.bindProcessToNetwork(network);
+                            }
                         } else {
                             callbackContext.error("WifiWizard2: Connected with missing capability - NET_CAPABILITY_VALIDATED");
                         }
@@ -2053,6 +2079,8 @@ public class WifiWizard2 extends CordovaPlugin {
                         callbackContext.error("SPECIFIER_NETWORK_UNAVAILABLE");
                     }
                 };
+
+                connectivityManager.requestNetwork(networkRequest, networkCallback);
 
             } catch (Exception e) {
                 callbackContext.error(e.getMessage());
