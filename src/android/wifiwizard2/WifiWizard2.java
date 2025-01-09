@@ -17,7 +17,6 @@ package wifiwizard2;
 import org.apache.cordova.*;
 
 import java.util.List;
-import java.util.concurrent.Future;
 import java.lang.InterruptedException;
 
 import org.json.JSONArray;
@@ -37,7 +36,6 @@ import android.net.DhcpInfo;
 
 import android.net.wifi.WifiManager;
 import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiEnterpriseConfig;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.SupplicantState;
@@ -60,7 +58,6 @@ import java.net.HttpURLConnection;
 
 import java.net.UnknownHostException;
 
-import java.util.ArrayList;
 import android.net.wifi.WifiNetworkSpecifier;
 
 public class WifiWizard2 extends CordovaPlugin {
@@ -106,7 +103,7 @@ public class WifiWizard2 extends CordovaPlugin {
     private static final int WIFI_SERVICE_INFO_CODE = 3;
     private static final String ACCESS_FINE_LOCATION = android.Manifest.permission.ACCESS_FINE_LOCATION;
 
-    private static int LAST_NET_ID = -1;
+    private static final int LAST_NET_ID = -1;
     // This is for when SSID or BSSID is requested but permissions have not been granted for location
     // we store whether or not BSSID was requested, to recall the getWifiServiceInfo fn after permissions are granted
     private static boolean bssidRequested = false;
@@ -160,7 +157,7 @@ public class WifiWizard2 extends CordovaPlugin {
         super.initialize(cordova, webView);
         this.wifiManager = (WifiManager) cordova.getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         this.connectivityManager = (ConnectivityManager) cordova.getActivity().getApplicationContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-        this.locationManager = (LocationManager) cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
+        locationManager = (LocationManager) cordova.getActivity().getSystemService(Context.LOCATION_SERVICE);
     }
 
     @Override
@@ -560,26 +557,21 @@ public class WifiWizard2 extends CordovaPlugin {
 
                     if (waitForConnection.equals("true")) {
                         callbackContext.success("NETWORK_ENABLED");
-                        return;
                     } else {
                         new ConnectAsync().execute(callbackContext, networkIdToEnable);
-                        return;
                     }
 
                 } else {
                     callbackContext.error("ERROR_ENABLING_NETWORK");
-                    return;
                 }
 
             } else {
                 callbackContext.error("UNABLE_TO_ENABLE");
-                return;
             }
 
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
             Log.d(TAG, e.getMessage());
-            return;
         }
 
     }
@@ -741,11 +733,9 @@ public class WifiWizard2 extends CordovaPlugin {
             }
 
             new ConnectAsync().execute(callbackContext, networkIdToConnect);
-            return;
 
         } else {
             callbackContext.error("INVALID_NETWORK_ID_TO_CONNECT");
-            return;
         }
     }
 
@@ -783,7 +773,7 @@ public class WifiWizard2 extends CordovaPlugin {
             for (int i = 0; i < TIMES_TO_RETRY; i++) {
 
                 WifiInfo info = wifiManager.getConnectionInfo();
-                NetworkInfo.DetailedState connectionState = info
+                NetworkInfo.DetailedState connectionState = WifiInfo
                         .getDetailedStateOf(info.getSupplicantState());
 
                 boolean isConnected
@@ -994,14 +984,14 @@ public class WifiWizard2 extends CordovaPlugin {
 
             for (ScanResult scan : scanResults) {
                 /*
-         * @todo - breaking change, remove this notice when tidying new release and explain changes, e.g.:
-         *   0.y.z includes a breaking change to WifiWizard2.getScanResults().
-         *   Earlier versions set scans' level attributes to a number derived from wifiManager.calculateSignalLevel.
-         *   This update returns scans' raw RSSI value as the level, per Android spec / APIs.
-         *   If your application depends on the previous behaviour, we have added an options object that will modify behaviour:
-         *   - if `(n == true || n < 2)`, `*.getScanResults({numLevels: n})` will return data as before, split in 5 levels;
-         *   - if `(n > 1)`, `*.getScanResults({numLevels: n})` will calculate the signal level, split in n levels;
-         *   - if `(n == false)`, `*.getScanResults({numLevels: n})` will use the raw signal level;
+                 * @todo - breaking change, remove this notice when tidying new release and explain changes, e.g.:
+                 *   0.y.z includes a breaking change to WifiWizard2.getScanResults().
+                 *   Earlier versions set scans' level attributes to a number derived from wifiManager.calculateSignalLevel.
+                 *   This update returns scans' raw RSSI value as the level, per Android spec / APIs.
+                 *   If your application depends on the previous behaviour, we have added an options object that will modify behaviour:
+                 *   - if `(n == true || n < 2)`, `*.getScanResults({numLevels: n})` will return data as before, split in 5 levels;
+                 *   - if `(n > 1)`, `*.getScanResults({numLevels: n})` will calculate the signal level, split in n levels;
+                 *   - if `(n == false)`, `*.getScanResults({numLevels: n})` will use the raw signal level;
                  */
 
                 int level;
@@ -1009,7 +999,7 @@ public class WifiWizard2 extends CordovaPlugin {
                 if (numLevels == null) {
                     level = scan.level;
                 } else {
-                    level = wifiManager.calculateSignalLevel(scan.level, numLevels);
+                    level = WifiManager.calculateSignalLevel(scan.level, numLevels);
                 }
 
                 JSONObject lvl = new JSONObject();
@@ -1395,8 +1385,7 @@ public class WifiWizard2 extends CordovaPlugin {
             List<InterfaceAddress> intAddrs = ni.getInterfaceAddresses();
             for (InterfaceAddress ia : intAddrs) {
                 if (!ia.getAddress().isLoopbackAddress() && ia.getAddress() instanceof Inet4Address) {
-                    return getIPv4SubnetFromNetPrefixLength(ia.getNetworkPrefixLength()).getHostAddress()
-                            .toString();
+                    return getIPv4SubnetFromNetPrefixLength(ia.getNetworkPrefixLength()).getHostAddress();
                 }
             }
         } catch (Exception e) {
@@ -1417,8 +1406,8 @@ public class WifiWizard2 extends CordovaPlugin {
                 shift = (shift >> 1);
             }
             String subnet
-                    = Integer.toString((shift >> 24) & 255) + "." + Integer.toString((shift >> 16) & 255) + "."
-                    + Integer.toString((shift >> 8) & 255) + "." + Integer.toString(shift & 255);
+                    = ((shift >> 24) & 255) + "." + ((shift >> 16) & 255) + "."
+                    + ((shift >> 8) & 255) + "." + (shift & 255);
             return InetAddress.getByName(subnet);
         } catch (Exception e) {
         }
@@ -1651,12 +1640,8 @@ public class WifiWizard2 extends CordovaPlugin {
 
             Log.d(TAG, "pingCmd exitValue" + exit);
 
-            if (exit == 0) {
-                return true;
-            } else {
-                // ip address is not reachable
-                return false;
-            }
+            // ip address is not reachable
+            return exit == 0;
         } catch (UnknownHostException e) {
             Log.d(TAG, "UnknownHostException: " + e.getMessage());
         } catch (Exception e) {
@@ -1747,7 +1732,7 @@ public class WifiWizard2 extends CordovaPlugin {
             if (API_VERSION >= 23) {
                 connectivityManager.bindProcessToNetwork(null);
             } else if (API_VERSION >= 21 && API_VERSION < 23) {
-                connectivityManager.setProcessDefaultNetwork(null);
+                ConnectivityManager.setProcessDefaultNetwork(null);
             }
 
             if (API_VERSION > 21 && networkCallback != null) {
@@ -1812,11 +1797,7 @@ public class WifiWizard2 extends CordovaPlugin {
 
         try {
             int locMode = getLocationMode();
-            if (locMode > 0) {
-                return true;
-            } else {
-                return false;
-            }
+            return locMode > 0;
 
         } catch (Exception e) {
             Log.d(TAG, e.getMessage());
@@ -1937,7 +1918,7 @@ public class WifiWizard2 extends CordovaPlugin {
             networkCallback = new ConnectivityManager.NetworkCallback() {
                 @Override
                 public void onAvailable(Network network) {
-                    connectivityManager.setProcessDefaultNetwork(network);
+                    ConnectivityManager.setProcessDefaultNetwork(network);
                 }
             };
 
@@ -1978,12 +1959,12 @@ public class WifiWizard2 extends CordovaPlugin {
     }
 
     /*
-  *  Specifier one network to connect wifi providing ssid and password
-  *  Author: Anthony Sychev (hello at dm211 dot com)
-  *
-  *  If you not provide pass or algorithm is not set as WPE|WPA|WPA2|WPA3 is represent as default Open network
-  *
-  *  DOC: https://developer.android.com/reference/android/net/wifi/WifiNetworkSpecifier.Builder
+     *  Specifier one network to connect wifi providing ssid and password
+     *  Author: Anthony Sychev (hello at dm211 dot com)
+     *
+     *  If you not provide pass or algorithm is not set as WPE|WPA|WPA2|WPA3 is represent as default Open network
+     *
+     *  DOC: https://developer.android.com/reference/android/net/wifi/WifiNetworkSpecifier.Builder
      */
     private void specifierConnection(CallbackContext callbackContext, JSONArray data) {
         Log.d(TAG, "WifiWizard2: 211 - Api >= 29 WiFi connection specifier your api version: " + API_VERSION);
@@ -2010,11 +1991,11 @@ public class WifiWizard2 extends CordovaPlugin {
                 WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder();
                 builder.setSsid(SSID);
 
-                if (Algorithm.matches("/WEP|WPA|WPA2/gim") && PASS.length() > 0) {
+                if (Algorithm.matches("/WEP|WPA|WPA2/gim") && !PASS.isEmpty()) {
                     builder.setWpa2Passphrase(PASS);
                 }
 
-                if (Algorithm.matches("/WPA3/gim") && PASS.length() > 0) {
+                if (Algorithm.matches("/WPA3/gim") && !PASS.isEmpty()) {
                     builder.setWpa3Passphrase(PASS);
                 }
 
@@ -2028,7 +2009,8 @@ public class WifiWizard2 extends CordovaPlugin {
                 NetworkRequest.Builder networkRequestBuilder1 = new NetworkRequest.Builder();
 
                 networkRequestBuilder1.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+                        .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED);
+                //.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
                 // .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
                 //.addCapability (NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
 
