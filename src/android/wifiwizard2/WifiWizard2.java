@@ -2028,7 +2028,8 @@ public class WifiWizard2 extends CordovaPlugin {
                 NetworkRequest.Builder networkRequestBuilder1 = new NetworkRequest.Builder();
 
                 networkRequestBuilder1.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                        .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
+                        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+                // .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
                 //.addCapability (NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -2041,9 +2042,17 @@ public class WifiWizard2 extends CordovaPlugin {
                     public void onAvailable(Network network) {
                         super.onAvailable(network);
                         Log.d(TAG, "WifiWizard2: 211 onAvailable:" + network);
-                        callbackContext.success();
+
                         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                             connectivityManager.bindProcessToNetwork(network);
+                        }
+
+                        NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(network);
+                        if (networkCapabilities != null && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
+                            // Network is available and validated
+                            callbackContext.success();
+                        } else {
+                            callbackContext.error("Connected with missing capability: NET_CAPABILITY_VALIDATED");
                         }
                     }
 
