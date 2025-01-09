@@ -2037,9 +2037,10 @@ public class WifiWizard2 extends CordovaPlugin {
 
                         Log.d(TAG, "WifiWizard2: Network capabilities detected for network - " + network + " - [" + networkCapabilities + "]");
 
-                        if (networkCapabilities != null && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
+                        if (networkCapabilities != null && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
                             // Network is available and validated
                             callbackContext.success();
+                            connectivityManager.requestNetwork(networkRequest, networkCallback);
                         } else {
                             callbackContext.error("WifiWizard2: Connected with missing capability - NET_CAPABILITY_VALIDATED");
                         }
@@ -2052,7 +2053,6 @@ public class WifiWizard2 extends CordovaPlugin {
                         callbackContext.error("SPECIFIER_NETWORK_UNAVAILABLE");
                     }
                 };
-                connectivityManager.requestNetwork(networkRequest, networkCallback);
 
             } catch (Exception e) {
                 callbackContext.error(e.getMessage());
