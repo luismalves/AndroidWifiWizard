@@ -2012,49 +2012,45 @@ public class WifiWizard2 extends CordovaPlugin {
             try {
                 String SSID = data.getString(0);
                 String PASS = data.getString(1);
-                String Algorithm = data.getString(2);
-                Boolean isHidden = data.getBoolean(3);
+                // String Algorithm = data.getString(2);
+                // Boolean isHidden = data.getBoolean(3);
 
                 Log.d(TAG, "WifiWizard2: data: " + data);
                 Log.d(TAG, "WifiWizard2: ssid: " + SSID);
                 Log.d(TAG, "WifiWizard2: pass: " + PASS);
-                Log.d(TAG, "WifiWizard2: Algorithm: " + Algorithm);
-                Log.d(TAG, "WifiWizard2: ishidden: " + isHidden);
+                Log.d(TAG, "WifiWizard2: Algorithm: " + "");
+                Log.d(TAG, "WifiWizard2: ishidden: " + false);
 
                 // WifiNetworkSpecifier builder
-                WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder();
-                builder.setSsid(SSID);
+                WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder()
+                        .setSsid(SSID)
+                        .build();
 
-                if (Algorithm.matches("/WEP|WPA|WPA2/gim") && !PASS.isEmpty()) {
-                    builder.setWpa2Passphrase(PASS);
-                }
-
-                if (Algorithm.matches("/WPA3/gim") && !PASS.isEmpty()) {
-                    builder.setWpa3Passphrase(PASS);
-                }
-
-                if (isHidden) {
-                    builder.setIsHiddenSsid(true);
-                }
-
+                // if (Algorithm.matches("/WEP|WPA|WPA2/gim") && !PASS.isEmpty()) {
+                //     builder.setWpa2Passphrase(PASS);
+                // }
+                // if (Algorithm.matches("/WPA3/gim") && !PASS.isEmpty()) {
+                //     builder.setWpa3Passphrase(PASS);
+                // }
+                // if (isHidden) {
+                //     builder.setIsHiddenSsid(true);
+                // }
                 // WifiNetworkSpecifier
-                WifiNetworkSpecifier wifiNetworkSpecifier = builder.build();
-
+                // WifiNetworkSpecifier wifiNetworkSpecifier = builder.build();
                 // NetworkRequest Builder
-                NetworkRequest.Builder networkRequestBuilder1 = new NetworkRequest.Builder();
-
-                networkRequestBuilder1.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                NetworkRequest.Builder networkRequestBuilder = new NetworkRequest.Builder()
+                        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
                         .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED);
-                //.addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+                .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
                 // .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
                 //.addCapability (NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
 
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    networkRequestBuilder1.setNetworkSpecifier(wifiNetworkSpecifier);
+                    networkRequestBuilder.setNetworkSpecifier(wifiNetworkSpecifier);
                 }
 
                 // Network Request
-                NetworkRequest networkRequest = networkRequestBuilder1.build();
+                NetworkRequest networkRequest = networkRequestBuilder.build();
 
                 ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
                     @Override
