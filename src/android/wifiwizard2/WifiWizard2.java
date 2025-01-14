@@ -2022,7 +2022,7 @@ public class WifiWizard2 extends CordovaPlugin {
                 Log.d(TAG, "WifiWizard2: ishidden: " + false);
 
                 // WifiNetworkSpecifier
-                WifiNetworkSpecifier builder = new WifiNetworkSpecifier.Builder()
+                WifiNetworkSpecifier wifiNetworkSpecifier = new WifiNetworkSpecifier.Builder()
                         .setSsid(SSID)
                         .build();
 
