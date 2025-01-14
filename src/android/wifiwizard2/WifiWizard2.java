@@ -711,36 +711,41 @@ public class WifiWizard2 extends CordovaPlugin {
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
             Log.d(TAG, "WifiWizard2: Connecting via suggestions...");
-            WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
-                    .setSsid(ssidToConnect)
-                    .setPriority(999)
+            // WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
+            //         .setSsid(ssidToConnect)
+            //         .setPriority(999)
+            //         .build();
+
+            // List<WifiNetworkSuggestion> suggestions = new ArrayList<>();
+            // suggestions.add(suggestion);
+            // int status = wifiManager.addNetworkSuggestions(suggestions);
+            // if (status != WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
+            //     // Handle error
+            //     callbackContext.error("STATUS_NETWORK_SUGGESTIONS_SUCCESS");
+            // }
+            WifiNetworkSpecifier specifier = new WifiNetworkSpecifier.Builder()
+                    .setSsid("Your_SSID")
                     .build();
 
-            List<WifiNetworkSuggestion> suggestions = new ArrayList<>();
-            suggestions.add(suggestion);
+            NetworkRequest request = new NetworkRequest.Builder()
+                    .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                    .setNetworkSpecifier(specifier)
+                    .build();
 
-            int status = wifiManager.addNetworkSuggestions(suggestions);
-            if (status != WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
-                // Handle error
-                callbackContext.error("STATUS_NETWORK_SUGGESTIONS_SUCCESS");
-            }
-
-            // Optional (Wait for post connection broadcast to one of your suggestions)
-            final IntentFilter intentFilter
-                    = new IntentFilter(WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION);
-
-            final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
+            connectivityManager.requestNetwork(request, new ConnectivityManager.NetworkCallback() {
                 @Override
-                public void onReceive(Context context, Intent intent) {
-                    if (!intent.getAction().equals(
-                            WifiManager.ACTION_WIFI_NETWORK_SUGGESTION_POST_CONNECTION)) {
-                        return;
-                    }
-                    // do post connect processing here...
-                    Log.d(TAG, "POST CONNECT ACTION");
+                public void onAvailable(Network network) {
+                    // Handle successful connection
+                    Log.d(TAG, "WifiWizard2: Connected successfully");
+                    callbackContext.success("WifiWizard2: Connected successfully");
                 }
-            };
-            Context.registerReceiver(broadcastReceiver, intentFilter);
+
+                @Override
+                public void onUnavailable() {
+                    // Handle failed connection
+                    callbackContext.error("WifiWizard2: Unavailable network");
+                }
+            });
         } else {
             // Fallback for older devices
             Log.d(TAG, "WifiWizard2: Fallback for older devices. Enabling connection...");
