@@ -710,6 +710,7 @@ public class WifiWizard2 extends CordovaPlugin {
         }
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+            Log.d(TAG, "WifiWizard2: Connecting via suggestions...");
             WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
                     .setSsid(ssidToConnect)
                     .setPriority(999)
@@ -725,6 +726,7 @@ public class WifiWizard2 extends CordovaPlugin {
             }
         } else {
             // Fallback for older devices
+            Log.d(TAG, "WifiWizard2: Fallback for older devices. Enabling connection...");
             WifiConfiguration wifiConfig = new WifiConfiguration();
             wifiConfig.SSID = String.format("\"%s\"", ssidToConnect);
 
@@ -2070,7 +2072,7 @@ public class WifiWizard2 extends CordovaPlugin {
                                 connectivityManager.bindProcessToNetwork(network);
                             }
                         } else {
-                            callbackContext.error("WifiWizard2: Connected with missing capability - NET_CAPABILITY_VALIDATED");
+                            callbackContext.error("WifiWizard2: Missing capability - NET_CAPABILITY_VALIDATED");
                         }
                     }
 
