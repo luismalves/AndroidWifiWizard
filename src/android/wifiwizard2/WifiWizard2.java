@@ -717,7 +717,7 @@ public class WifiWizard2 extends CordovaPlugin {
                     .setPriority(999)
                     .build();
 
-            List<WifiNetworkSuggestion> suggestions = new ArrayList<>();
+            ArrayList<WifiNetworkSuggestion> suggestions = new ArrayList<>();
             suggestions.add(suggestion);
 
             int status = wifiManager.addNetworkSuggestions(suggestions);
