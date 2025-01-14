@@ -710,7 +710,7 @@ public class WifiWizard2 extends CordovaPlugin {
         }
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            Log.d(TAG, "WifiWizard2: Connecting via suggestions...");
+            // Log.d(TAG, "WifiWizard2: Connecting via suggestions...");
             // WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
             //         .setSsid(ssidToConnect)
             //         .setPriority(999)
@@ -723,29 +723,8 @@ public class WifiWizard2 extends CordovaPlugin {
             //     // Handle error
             //     callbackContext.error("STATUS_NETWORK_SUGGESTIONS_SUCCESS");
             // }
-            WifiNetworkSpecifier specifier = new WifiNetworkSpecifier.Builder()
-                    .setSsid("Your_SSID")
-                    .build();
+            specifierConnection(callbackContext, data);
 
-            NetworkRequest request = new NetworkRequest.Builder()
-                    .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                    .setNetworkSpecifier(specifier)
-                    .build();
-
-            connectivityManager.requestNetwork(request, new ConnectivityManager.NetworkCallback() {
-                @Override
-                public void onAvailable(Network network) {
-                    // Handle successful connection
-                    Log.d(TAG, "WifiWizard2: Connected successfully");
-                    callbackContext.success("WifiWizard2: Connected successfully");
-                }
-
-                @Override
-                public void onUnavailable() {
-                    // Handle failed connection
-                    callbackContext.error("WifiWizard2: Unavailable network");
-                }
-            });
         } else {
             // Fallback for older devices
             Log.d(TAG, "WifiWizard2: Fallback for older devices. Enabling connection...");
