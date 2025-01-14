@@ -2040,8 +2040,8 @@ public class WifiWizard2 extends CordovaPlugin {
                 // NetworkRequest Builder
                 NetworkRequest.Builder networkRequestBuilder = new NetworkRequest.Builder();
                 networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                        .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
-                        .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+                        .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED);
+                // .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
                 // .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
                 //.addCapability (NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
 
