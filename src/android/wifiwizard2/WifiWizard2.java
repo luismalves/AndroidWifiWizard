@@ -14,6 +14,11 @@
  */
 package wifiwizard2;
 
+import static android.provider.Settings.ACTION_WIFI_ADD_NETWORKS;
+import static android.provider.Settings.EXTRA_WIFI_NETWORK_LIST;
+
+import static androidx.core.app.ActivityCompat.startActivityForResult;
+
 import org.apache.cordova.*;
 
 import java.util.List;
@@ -44,6 +49,7 @@ import android.net.ConnectivityManager;
 import android.net.wifi.WifiNetworkSuggestion;
 
 import android.location.LocationManager;
+import android.os.Bundle;
 import android.provider.Settings;
 
 import android.content.Context;
@@ -710,21 +716,28 @@ public class WifiWizard2 extends CordovaPlugin {
         }
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            // Log.d(TAG, "WifiWizard2: Connecting via suggestions...");
-            // WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
-            //         .setSsid(ssidToConnect)
-            //         .setPriority(999)
-            //         .build();
+            Log.d(TAG, "WifiWizard2: Connecting via suggestions...");
 
-            // List<WifiNetworkSuggestion> suggestions = new ArrayList<>();
-            // suggestions.add(suggestion);
-            // int status = wifiManager.addNetworkSuggestions(suggestions);
-            // if (status != WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
-            //     // Handle error
-            //     callbackContext.error("STATUS_NETWORK_SUGGESTIONS_SUCCESS");
-            // }
-            specifierConnection(callbackContext, data);
+            ArrayList<WifiNetworkSuggestion> suggestions = new ArrayList<>();
 
+            // Open configuration
+            suggestions.add(new WifiNetworkSuggestion.Builder()
+                    .setSsid(ssidToConnect)
+                    .build());
+
+            final int status = wifiManager.addNetworkSuggestions(suggestions);
+            if (status != WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
+                // do error handling here…
+            }
+
+            // Create intent
+            Bundle bundle = new Bundle();
+            bundle.putParcelableArrayList(EXTRA_WIFI_NETWORK_LIST, suggestions);
+            Intent intent = new Intent(ACTION_WIFI_ADD_NETWORKS);
+            intent.putExtras(bundle);
+
+            // Launch intent
+            this.cordova.getActivity().startActivity(intent);
         } else {
             // Fallback for older devices
             Log.d(TAG, "WifiWizard2: Fallback for older devices. Enabling connection...");
@@ -1764,7 +1777,7 @@ public class WifiWizard2 extends CordovaPlugin {
             // Lollipop OS or newer
             if (API_VERSION >= 23) {
                 connectivityManager.bindProcessToNetwork(null);
-            } else if (API_VERSION >= 21 && API_VERSION < 23) {
+            } else if (API_VERSION >= 21) {
                 ConnectivityManager.setProcessDefaultNetwork(null);
             }
 
@@ -1989,107 +2002,5 @@ public class WifiWizard2 extends CordovaPlugin {
             this.bssid = bssid;
         }
 
-    }
-
-    /*
-     *  Specifier one network to connect wifi providing ssid and password
-     *  Author: Anthony Sychev (hello at dm211 dot com)
-     *
-     *  If you not provide pass or algorithm is not set as WPE|WPA|WPA2|WPA3 is represent as default Open network
-     *
-     *  DOC: https://developer.android.com/reference/android/net/wifi/WifiNetworkSpecifier.Builder
-     */
-    private void specifierConnection(CallbackContext callbackContext, JSONArray data) {
-        Log.d(TAG, "WifiWizard2: Entered specifierConnection - Api >= 29 WiFi connection specifier your api version: " + API_VERSION);
-
-        if (API_VERSION >= 29) {
-            if (!validateData(data)) {
-                callbackContext.error("SPECIFIER_INVALID_DATA");
-                Log.d(TAG, "WifiWizard2: specifierConnection invalid data.");
-                return;
-            }
-
-            try {
-                String SSID = data.getString(0);
-                String PASS = data.getString(1);
-                // String Algorithm = data.getString(2);
-                // Boolean isHidden = data.getBoolean(3);
-
-                Log.d(TAG, "WifiWizard2: data: " + data);
-                Log.d(TAG, "WifiWizard2: ssid: " + SSID);
-                Log.d(TAG, "WifiWizard2: pass: " + PASS);
-                Log.d(TAG, "WifiWizard2: Algorithm: " + "");
-                Log.d(TAG, "WifiWizard2: ishidden: " + false);
-
-                // WifiNetworkSpecifier
-                WifiNetworkSpecifier wifiNetworkSpecifier = new WifiNetworkSpecifier.Builder()
-                        .setSsid(SSID)
-                        .build();
-
-                // if (Algorithm.matches("/WEP|WPA|WPA2/gim") && !PASS.isEmpty()) {
-                //     builder.setWpa2Passphrase(PASS);
-                // }
-                // if (Algorithm.matches("/WPA3/gim") && !PASS.isEmpty()) {
-                //     builder.setWpa3Passphrase(PASS);
-                // }
-                // if (isHidden) {
-                //     builder.setIsHiddenSsid(true);
-                // }
-                // WifiNetworkSpecifier
-                // WifiNetworkSpecifier wifiNetworkSpecifier = builder.build();
-                // NetworkRequest Builder
-                NetworkRequest.Builder networkRequestBuilder = new NetworkRequest.Builder();
-                networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-                        .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED);
-                // .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-                // .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
-                //.addCapability (NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL);
-
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    networkRequestBuilder.setNetworkSpecifier(wifiNetworkSpecifier);
-                }
-
-                // Network Request
-                NetworkRequest networkRequest = networkRequestBuilder.build();
-
-                ConnectivityManager.NetworkCallback networkCallback = new ConnectivityManager.NetworkCallback() {
-                    @Override
-                    public void onAvailable(Network network) {
-                        super.onAvailable(network);
-                        Log.d(TAG, "WifiWizard2: Entered onAvailable:" + network);
-
-                        NetworkCapabilities networkCapabilities = connectivityManager.getNetworkCapabilities(network);
-
-                        Log.d(TAG, "WifiWizard2: Network capabilities detected for network - " + network + " - [" + networkCapabilities + "]");
-
-                        if (networkCapabilities != null && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) && networkCapabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
-                            // Network is available and validated
-                            callbackContext.success();
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                connectivityManager.bindProcessToNetwork(network);
-                            }
-                        } else {
-                            callbackContext.error("WifiWizard2: Missing capability - NET_CAPABILITY_VALIDATED");
-                        }
-                    }
-
-                    @Override
-                    public void onUnavailable() {
-                        super.onUnavailable();
-                        Log.d(TAG, "WifiWizard2: Entered onUnavailable");
-                        callbackContext.error("SPECIFIER_NETWORK_UNAVAILABLE");
-                    }
-                };
-
-                connectivityManager.requestNetwork(networkRequest, networkCallback);
-
-            } catch (Exception e) {
-                callbackContext.error(e.getMessage());
-                Log.d(TAG, e.getMessage());
-            }
-        } else {
-            callbackContext.error("SPECIFIER_INVALID_API_VERSION");
-            Log.d(TAG, "WifiWizard2: specifierConnection invalid Android API Version is below as needed.");
-        }
     }
 }
