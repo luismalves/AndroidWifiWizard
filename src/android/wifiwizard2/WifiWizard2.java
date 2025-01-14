@@ -2021,8 +2021,8 @@ public class WifiWizard2 extends CordovaPlugin {
                 Log.d(TAG, "WifiWizard2: Algorithm: " + "");
                 Log.d(TAG, "WifiWizard2: ishidden: " + false);
 
-                // WifiNetworkSpecifier builder
-                WifiNetworkSpecifier.Builder builder = new WifiNetworkSpecifier.Builder()
+                // WifiNetworkSpecifier
+                WifiNetworkSpecifier builder = new WifiNetworkSpecifier.Builder()
                         .setSsid(SSID)
                         .build();
 
@@ -2038,8 +2038,8 @@ public class WifiWizard2 extends CordovaPlugin {
                 // WifiNetworkSpecifier
                 // WifiNetworkSpecifier wifiNetworkSpecifier = builder.build();
                 // NetworkRequest Builder
-                NetworkRequest.Builder networkRequestBuilder = new NetworkRequest.Builder()
-                        .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
+                NetworkRequest.Builder networkRequestBuilder = new NetworkRequest.Builder();
+                networkRequestBuilder.addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
                         .addCapability(NetworkCapabilities.NET_CAPABILITY_NOT_RESTRICTED)
                         .addCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
                 // .addCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED);
