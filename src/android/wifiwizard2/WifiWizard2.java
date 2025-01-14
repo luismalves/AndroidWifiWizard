@@ -175,12 +175,6 @@ public class WifiWizard2 extends CordovaPlugin {
         this.callbackContext = callbackContext;
         this.passedData = data;
 
-        //>= 29
-        if (action.equals(SPECIFIER_NETWORK)) {
-            this.specifierConnection(callbackContext, data);
-            return true;
-        }
-
         // Actions that do not require WiFi to be enabled
         // Actions that do not require WiFi to be enabled
         if (action.equals(IS_LOCATION_ENABLED)) {
@@ -718,16 +712,18 @@ public class WifiWizard2 extends CordovaPlugin {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
             Log.d(TAG, "WifiWizard2: Connecting via suggestions...");
 
-            ArrayList<WifiNetworkSuggestion> suggestions = new ArrayList<>();
-
-            // Open configuration
-            suggestions.add(new WifiNetworkSuggestion.Builder()
+            WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
                     .setSsid(ssidToConnect)
-                    .build());
+                    .setPriority(999)
+                    .build();
 
-            final int status = wifiManager.addNetworkSuggestions(suggestions);
+            List<WifiNetworkSuggestion> suggestions = new ArrayList<>();
+            suggestions.add(suggestion);
+
+            int status = wifiManager.addNetworkSuggestions(suggestions);
             if (status != WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
-                // do error handling here…
+                // Handle error
+                callbackContext.error("STATUS_NETWORK_SUGGESTIONS_SUCCESS");
             }
 
             // Create intent
