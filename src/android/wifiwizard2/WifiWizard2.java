@@ -713,7 +713,7 @@ public class WifiWizard2 extends CordovaPlugin {
                     .build();
 
             // Get existing suggestions
-            ArrayList<WifiNetworkSuggestion> suggestions = wifiManager.getNetworkSuggestions();
+            ArrayList<WifiNetworkSuggestion> suggestions = new ArrayList<>(wifiManager.getNetworkSuggestions());
 
             // Remove all existing suggestions before adding new one
             wifiManager.removeNetworkSuggestions(suggestions);
