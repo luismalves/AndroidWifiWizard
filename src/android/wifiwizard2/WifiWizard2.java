@@ -17,8 +17,6 @@ package wifiwizard2;
 import static android.provider.Settings.ACTION_WIFI_ADD_NETWORKS;
 import static android.provider.Settings.EXTRA_WIFI_NETWORK_LIST;
 
-import static androidx.core.app.ActivityCompat.startActivityForResult;
-
 import org.apache.cordova.*;
 
 import java.util.List;
@@ -66,8 +64,6 @@ import java.net.HttpURLConnection;
 
 import java.net.UnknownHostException;
 import java.util.Objects;
-
-import android.net.wifi.WifiNetworkSpecifier;
 
 public class WifiWizard2 extends CordovaPlugin {
 
@@ -634,13 +630,12 @@ public class WifiWizard2 extends CordovaPlugin {
      *
      * @param callbackContext A Cordova callback context
      * @param data JSON Array, with [0] being SSID to remove
-     * @return true if network removed, false if failed
      */
-    private boolean remove(CallbackContext callbackContext, JSONArray data) {
+    private void remove(CallbackContext callbackContext, JSONArray data) {
 
         if (!validateData(data)) {
             callbackContext.error("WifiWizard2 - Error removing network connection with message <REMOVE_INVALID_DATA>");
-            return false;
+            return;
         }
 
         // TODO: Verify the type of data!
@@ -676,16 +671,12 @@ public class WifiWizard2 extends CordovaPlugin {
                     } else {
                         callbackContext.error("WifiWizard2 - Error removing network connection with message <UNABLE_TO_REMOVE>");
                     }
-                    return true;
                 } else {
                     callbackContext.error("WifiWizard2 - Error removing network connection with message <Network not found, can't remove - REMOVE_NETWORK_NOT_FOUND>");
-                    return false;
                 }
             }
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
-            Log.d(TAG, Objects.requireNonNull(e.getMessage()));
-            return false;
         }
     }
 
