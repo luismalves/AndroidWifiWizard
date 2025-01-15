@@ -706,14 +706,19 @@ public class WifiWizard2 extends CordovaPlugin {
         }
 
         if (API_VERSION >= android.os.Build.VERSION_CODES.Q) {
-            Log.d(TAG, "WifiWizard2: Connecting via suggestions...");
 
             WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
                     .setSsid(ssidToConnect)
                     .setPriority(9999)
                     .build();
 
-            ArrayList<WifiNetworkSuggestion> suggestions = new ArrayList<>();
+            // Get existing suggestions
+            ArrayList<WifiNetworkSuggestion> suggestions = wifiManager.getNetworkSuggestions();
+
+            // Remove all existing suggestions before adding new one
+            wifiManager.removeNetworkSuggestions(suggestions);
+
+            suggestions.clear();
             suggestions.add(suggestion);
 
             int status = wifiManager.addNetworkSuggestions(suggestions);
