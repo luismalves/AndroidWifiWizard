@@ -649,7 +649,7 @@ public class WifiWizard2 extends CordovaPlugin {
 
             if (API_VERSION >= android.os.Build.VERSION_CODES.Q) {
                 WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
-                        .setSsid(ssidToConnect)
+                        .setSsid(ssidToDisconnect)
                         .setPriority(9999)
                         .build();
 
