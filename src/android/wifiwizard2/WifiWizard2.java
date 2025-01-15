@@ -65,6 +65,7 @@ import java.net.NetworkInterface;
 import java.net.HttpURLConnection;
 
 import java.net.UnknownHostException;
+import java.util.Objects;
 
 import android.net.wifi.WifiNetworkSpecifier;
 
@@ -72,8 +73,6 @@ public class WifiWizard2 extends CordovaPlugin {
 
     private static final String TAG = "WifiWizard2";
     private static final int API_VERSION = Build.VERSION.SDK_INT;
-
-    private static final String SPECIFIER_NETWORK = "specifierConnection"; //>=29
 
     private static final String ADD_NETWORK = "add";
     private static final String REMOVE_NETWORK = "remove";
@@ -607,7 +606,6 @@ public class WifiWizard2 extends CordovaPlugin {
         int networkIdToDisconnect = ssidToNetworkId(ssidToDisable);
 
         try {
-
             if (networkIdToDisconnect > 0) {
                 if (wifiManager.disableNetwork(networkIdToDisconnect)) {
                     maybeResetBindALL();
@@ -639,11 +637,9 @@ public class WifiWizard2 extends CordovaPlugin {
      * @return true if network removed, false if failed
      */
     private boolean remove(CallbackContext callbackContext, JSONArray data) {
-        Log.d(TAG, "WifiWizard2: remove entered.");
 
         if (!validateData(data)) {
-            callbackContext.error("REMOVE_INVALID_DATA");
-            Log.d(TAG, "WifiWizard2: remove data invalid");
+            callbackContext.error("WifiWizard2 - Error removing network connection with message <REMOVE_INVALID_DATA>");
             return false;
         }
 
@@ -651,33 +647,44 @@ public class WifiWizard2 extends CordovaPlugin {
         try {
             String ssidToDisconnect = data.getString(0);
 
-            int networkIdToRemove = ssidToNetworkId(ssidToDisconnect);
+            if (API_VERSION >= android.os.Build.VERSION_CODES.Q) {
+                WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
+                        .setSsid(ssidToConnect)
+                        .setPriority(9999)
+                        .build();
 
-            if (networkIdToRemove > -1) {
+                ArrayList<WifiNetworkSuggestion> suggestions = new ArrayList<>();
+                suggestions.add(suggestion);
 
-                if (wifiManager.removeNetwork(networkIdToRemove)) {
-
-                    // Configurations persist by default in API 26+
-                    if (API_VERSION < 26) {
-                        wifiManager.saveConfiguration();
-                    }
-
-                    callbackContext.success("NETWORK_REMOVED");
-
+                int status = wifiManager.removeNetworkSuggestions(suggestions);
+                if (status != WifiManager.STATUS_NETWORK_SUGGESTIONS_SUCCESS) {
+                    // Handle error
+                    callbackContext.error("WifiWizard2 - Error removing network connection with message <STATUS_NETWORK_SUGGESTIONS_SUCCESS>");
                 } else {
-
-                    callbackContext.error("UNABLE_TO_REMOVE");
+                    callbackContext.success("WifiWizard2 - Network connection removed successfuly");
                 }
-
-                return true;
             } else {
-                callbackContext.error("REMOVE_NETWORK_NOT_FOUND");
-                Log.d(TAG, "WifiWizard2: Network not found, can't remove.");
-                return false;
+                int networkIdToRemove = ssidToNetworkId(ssidToDisconnect);
+
+                if (networkIdToRemove > -1) {
+                    if (wifiManager.removeNetwork(networkIdToRemove)) {
+                        // Configurations persist by default in API 26+
+                        if (API_VERSION < 26) {
+                            wifiManager.saveConfiguration();
+                        }
+                        callbackContext.success("WifiWizard2 - Network connection removed successfuly <NETWORK_REMOVED>");
+                    } else {
+                        callbackContext.error("WifiWizard2 - Error removing network connection with message <UNABLE_TO_REMOVE>");
+                    }
+                    return true;
+                } else {
+                    callbackContext.error("WifiWizard2 - Error removing network connection with message <Network not found, can't remove - REMOVE_NETWORK_NOT_FOUND>");
+                    return false;
+                }
             }
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
-            Log.d(TAG, e.getMessage());
+            Log.d(TAG, Objects.requireNonNull(e.getMessage()));
             return false;
         }
     }
@@ -689,32 +696,30 @@ public class WifiWizard2 extends CordovaPlugin {
      * @param data JSON Array, with [0] being SSID to connect
      */
     private void connect(CallbackContext callbackContext, JSONArray data) {
-        Log.v(TAG, "WifiWizard2: connect entered.");
 
         if (!validateData(data)) {
             callbackContext.error("CONNECT_INVALID_DATA");
-            Log.d(TAG, "WifiWizard2: connect invalid data.");
             return;
         }
 
         String ssidToConnect = "";
-        String bindAll = "false";
+        // String bindAll = "false";
 
         try {
             ssidToConnect = data.getString(0);
-            bindAll = data.getString(1);
+            // bindAll = data.getString(1);
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
-            Log.d(TAG, e.getMessage());
+            Log.d(TAG, Objects.requireNonNull(e.getMessage()));
             return;
         }
 
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+        if (API_VERSION >= android.os.Build.VERSION_CODES.Q) {
             Log.d(TAG, "WifiWizard2: Connecting via suggestions...");
 
             WifiNetworkSuggestion suggestion = new WifiNetworkSuggestion.Builder()
                     .setSsid(ssidToConnect)
-                    .setPriority(999)
+                    .setPriority(9999)
                     .build();
 
             ArrayList<WifiNetworkSuggestion> suggestions = new ArrayList<>();
@@ -835,7 +840,7 @@ public class WifiWizard2 extends CordovaPlugin {
                 try {
                     Thread.sleep(ONE_SECOND);
                 } catch (InterruptedException e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e(TAG, Objects.requireNonNull(e.getMessage()));
                     return new String[]{"INTERRUPT_EXCEPT_WHILE_CONNECTING", null};
                 }
             }
@@ -866,7 +871,7 @@ public class WifiWizard2 extends CordovaPlugin {
             ssidToDisconnect = data.getString(0);
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
-            Log.d(TAG, e.getMessage());
+            Log.d(TAG, Objects.requireNonNull(e.getMessage()));
             return false;
         }
 
