@@ -1689,7 +1689,7 @@ public class WifiWizard2 extends CordovaPlugin {
 
                 Log.d(TAG, "NETWORK_STATE_CHANGED_ACTION");
 
-                wifiManagerwifiManager networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+                NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
                 WifiInfo info = WifiWizard2.this.wifiManager.getConnectionInfo();
 
                 // Checks that you're connected to the desired network
