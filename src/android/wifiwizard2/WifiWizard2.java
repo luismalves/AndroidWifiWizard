@@ -694,11 +694,11 @@ public class WifiWizard2 extends CordovaPlugin {
         }
 
         String ssidToConnect = "";
-        // String bindAll = "false";
+        String bindAll = "false";
 
         try {
             ssidToConnect = data.getString(0);
-            // bindAll = data.getString(1);
+            bindAll = data.getString(1);
         } catch (Exception e) {
             callbackContext.error(e.getMessage());
             Log.d(TAG, Objects.requireNonNull(e.getMessage()));
@@ -743,44 +743,30 @@ public class WifiWizard2 extends CordovaPlugin {
             WifiConfiguration wifiConfig = new WifiConfiguration();
             wifiConfig.SSID = String.format("\"%s\"", ssidToConnect);
 
-            int netId = wifiManager.addNetwork(wifiConfig);
-            wifiManager.disconnect();
-            wifiManager.enableNetwork(netId, true);
-            wifiManager.reconnect();
+            int networkId = wifiManager.addNetwork(wifiConfig);
+
+            // Bind all requests to WiFi network (only necessary for Lollipop+ - API 21+)
+            if (bindAll.equals("true")) {
+                registerBindALL(networkId);
+            }
+
+            if (API_VERSION >= 26) {
+                wifiManager.disconnect();
+            } else {
+                wifiManager.disableNetwork(networkId);
+            }
+
+            wifiManager.enableNetwork(networkId, true);
+
+            if (API_VERSION >= 26) {
+                wifiManager.reassociate();
+            } else {
+                wifiManager.reconnect();
+            }
+
+            new ConnectAsync().execute(callbackContext, networkId);
+
         }
-
-//        int networkIdToConnect = ssidToNetworkId(ssidToConnect);
-//
-//        if (networkIdToConnect > -1) {
-//            // We disable the network before connecting, because if this was the last connection before
-//            // a disconnect(), this will not reconnect.
-//
-//            Log.d(TAG, "Valid networkIdToConnect: attempting connection");
-//
-//            // Bind all requests to WiFi network (only necessary for Lollipop+ - API 21+)
-//            if (bindAll.equals("true")) {
-//                registerBindALL(networkIdToConnect);
-//            }
-//
-//            if (API_VERSION >= 26) {
-    
-
-    ////                wifiManager.disconnect();
-//            } else {
-//                wifiManager.disableNetwork(networkIdToConnect);
-//            }
-//
-//            wifiManager.enableNetwork(networkIdToConnect, true);
-//
-//            if (API_VERSION >= 26) {
-////        wifiManager.reassociate();
-//            }
-//
-//            new ConnectAsync().execute(callbackContext, networkIdToConnect);
-//
-//        } else {
-//            callbackContext.error("INVALID_NETWORK_ID_TO_CONNECT");
-//        }
     }
 
     /**
