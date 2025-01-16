@@ -735,6 +735,8 @@ public class WifiWizard2 extends CordovaPlugin {
 
             // Launch intent
             this.cordova.getActivity().startActivity(intent);
+            callbackContext.success("Started intent to add network to list + suggestions.");
+
         } else {
             // Fallback for older devices
             Log.d(TAG, "WifiWizard2: Fallback for older devices. Enabling connection...");
@@ -1356,16 +1358,11 @@ public class WifiWizard2 extends CordovaPlugin {
 
                 count++;
             }
-
             // If we make it this far, wifi should be enabled by now
             return true;
-
         } else {
-
             return true;
-
         }
-
     }
 
     /**
@@ -1496,18 +1493,14 @@ public class WifiWizard2 extends CordovaPlugin {
         }
 
         switch (requestCode) {
-            case SCAN_RESULTS_CODE:
+            case SCAN_RESULTS_CODE ->
                 getScanResults(callbackContext, passedData); // Call method again after permissions approved
-                break;
-            case SCAN_CODE:
+            case SCAN_CODE ->
                 scan(callbackContext, passedData); // Call method again after permissions approved
-                break;
-            case LOCATION_REQUEST_CODE:
+            case LOCATION_REQUEST_CODE ->
                 callbackContext.success("PERMISSION_GRANTED");
-                break;
-            case WIFI_SERVICE_INFO_CODE:
+            case WIFI_SERVICE_INFO_CODE ->
                 getWifiServiceInfo(callbackContext, bssidRequested);
-                break;
         }
     }
 
@@ -1706,7 +1699,7 @@ public class WifiWizard2 extends CordovaPlugin {
 
                 Log.d(TAG, "NETWORK_STATE_CHANGED_ACTION");
 
-                NetworkInfo networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
+                wifiManagerwifiManager networkInfo = intent.getParcelableExtra(WifiManager.EXTRA_NETWORK_INFO);
                 WifiInfo info = WifiWizard2.this.wifiManager.getConnectionInfo();
 
                 // Checks that you're connected to the desired network
@@ -1721,13 +1714,9 @@ public class WifiWizard2 extends CordovaPlugin {
                     if (desired != null && info.getNetworkId() == desired.apId) {
                         onSuccessfulConnection();
                     }
-
                 }
-
             }
-
         }
-
     }
 
     /**
@@ -1973,7 +1962,6 @@ public class WifiWizard2 extends CordovaPlugin {
             networkCallback = null;
             previous = null;
             desired = null;
-
         }
     }
 
