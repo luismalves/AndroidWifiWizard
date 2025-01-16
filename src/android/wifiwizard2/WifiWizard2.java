@@ -1479,14 +1479,18 @@ public class WifiWizard2 extends CordovaPlugin {
         }
 
         switch (requestCode) {
-            case SCAN_RESULTS_CODE ->
+            case SCAN_RESULTS_CODE:
                 getScanResults(callbackContext, passedData); // Call method again after permissions approved
-            case SCAN_CODE ->
+                break;
+            case SCAN_CODE:
                 scan(callbackContext, passedData); // Call method again after permissions approved
-            case LOCATION_REQUEST_CODE ->
+                break;
+            case LOCATION_REQUEST_CODE:
                 callbackContext.success("PERMISSION_GRANTED");
-            case WIFI_SERVICE_INFO_CODE ->
+                break;
+            case WIFI_SERVICE_INFO_CODE:
                 getWifiServiceInfo(callbackContext, bssidRequested);
+                break;
         }
     }
 
