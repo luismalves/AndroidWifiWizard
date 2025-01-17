@@ -20,7 +20,7 @@ import static android.provider.Settings.ACTION_WIFI_ADD_NETWORKS;
 import static android.provider.Settings.EXTRA_WIFI_NETWORK_LIST;
 import static android.provider.Settings.EXTRA_WIFI_NETWORK_RESULT_LIST;
 
-import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
+import static androidx.activity.result.ActivityResultCallerKt.*;
 
 import org.apache.cordova.*;
 
