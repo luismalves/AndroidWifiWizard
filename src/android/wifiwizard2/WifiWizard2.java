@@ -14,8 +14,13 @@
  */
 package wifiwizard2;
 
+import static android.app.Activity.RESULT_CANCELED;
+import static android.app.Activity.RESULT_OK;
 import static android.provider.Settings.ACTION_WIFI_ADD_NETWORKS;
 import static android.provider.Settings.EXTRA_WIFI_NETWORK_LIST;
+import static android.provider.Settings.EXTRA_WIFI_NETWORK_RESULT_LIST;
+
+import static androidx.activity.result.ActivityResultCallerKt.registerForActivityResult;
 
 import org.apache.cordova.*;
 
@@ -54,6 +59,8 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.os.Build;
+
+import androidx.activity.result.ActivityResultLauncher;
 
 import java.net.URL;
 import java.net.InetAddress;
@@ -99,6 +106,9 @@ public class WifiWizard2 extends CordovaPlugin {
     private static final String GET_WIFI_IP_INFO = "getWifiIPInfo";
     private static final String IS_LOCATION_ENABLED = "isLocationEnabled";
     private static final String SWITCH_TO_LOCATION_SETTINGS = "switchToLocationSettings";
+
+    private static final int OPEN_SETTINGS_WIFI_REQUEST_CODE = 420;
+    private static final int INTENT_CONNECT_WIFI_REQUEST_CODE = 666;
 
     private static final int SCAN_RESULTS_CODE = 0; // Permissions request code for getScanResults()
     private static final int SCAN_CODE = 1; // Permissions request code for scan()
@@ -293,6 +303,49 @@ public class WifiWizard2 extends CordovaPlugin {
             }
         }
         return true;
+    }
+
+//    ActivityResultLauncher<String> mGetContent = registerForActivityResult(new GetContent(),
+//            new ActivityResultCallback<Uri>() {
+//                @Override
+//                public void onActivityResult(Uri uri) {
+//                    // Handle the returned Uri
+//                }
+//            });
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == OPEN_SETTINGS_WIFI_REQUEST_CODE) {
+            if (resultCode == RESULT_OK) {
+
+            } else if (resultCode == RESULT_CANCELED) {
+                // Handle the cancellation
+            }
+        } else if (requestCode == INTENT_CONNECT_WIFI_REQUEST_CODE) {
+            if (resultCode == RESULT_OK && data != null) {
+                if (API_VERSION >= android.os.Build.VERSION_CODES.Q) {
+                    ArrayList<Integer> resultCodes = data.getIntegerArrayListExtra(EXTRA_WIFI_NETWORK_RESULT_LIST);
+                    if (resultCodes != null) {
+                        for (int code : resultCodes) {
+                            switch (code) {
+                                case 0: // ADD_WIFI_RESULT_SUCCESS
+                                    // Handle success
+                                    break;
+                                case 1: // ADD_WIFI_RESULT_ADD_OR_UPDATE_FAILED
+                                    // Handle failure
+                                    break;
+                                case 2: // ADD_WIFI_RESULT_ALREADY_EXISTS
+                                    // Handle already exists
+                                    openNetworkSettings();
+                                    break;
+                            }
+                        }
+                    }
+                }
+            } else if (resultCode == RESULT_CANCELED) {
+                // Handle the cancellation
+            }
+        }
     }
 
     /**
@@ -734,7 +787,7 @@ public class WifiWizard2 extends CordovaPlugin {
             intent.putExtras(bundle);
 
             // Launch intent
-            this.cordova.getActivity().startActivity(intent);
+            this.cordova.getActivity().startActivityForResult(intent, INTENT_CONNECT_WIFI_REQUEST_CODE);
             callbackContext.success("Started intent to add network to list + suggestions.");
 
         } else {
@@ -767,6 +820,15 @@ public class WifiWizard2 extends CordovaPlugin {
             new ConnectAsync().execute(callbackContext, networkId);
 
         }
+    }
+
+    /**
+     * This method attempts to open the wifi network settings screen As
+     * fallback, will try other network related settings screen
+     */
+    private void openNetworkSettings() {
+        Intent settingsIntent = new Intent(Settings.ACTION_WIFI_SETTINGS);
+        this.cordova.getActivity().startActivity(settingsIntent);
     }
 
     /**
