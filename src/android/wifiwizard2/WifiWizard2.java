@@ -315,16 +315,20 @@ public class WifiWizard2 extends CordovaPlugin {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "Entered onActivityResult with resultCode <" + resultCode + "> and requestCode <" + requestCode + ">");
         if (requestCode == OPEN_SETTINGS_WIFI_REQUEST_CODE) {
+            Log.d(TAG, "Entered OPEN_SETTINGS_WIFI_REQUEST_CODE");
             if (resultCode == RESULT_OK) {
 
             } else if (resultCode == RESULT_CANCELED) {
                 // Handle the cancellation
             }
         } else if (requestCode == INTENT_CONNECT_WIFI_REQUEST_CODE) {
+            Log.d(TAG, "Entered INTENT_CONNECT_WIFI_REQUEST_CODE");
             if (resultCode == RESULT_OK && data != null) {
                 if (API_VERSION >= android.os.Build.VERSION_CODES.Q) {
                     ArrayList<Integer> resultCodes = data.getIntegerArrayListExtra(EXTRA_WIFI_NETWORK_RESULT_LIST);
+                    Log.d(TAG, " - resultCodes obtained - " + resultCodes.toString());
                     if (resultCodes != null) {
                         for (int code : resultCodes) {
                             switch (code) {
