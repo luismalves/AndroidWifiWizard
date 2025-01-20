@@ -20,8 +20,8 @@ import static android.provider.Settings.ACTION_WIFI_ADD_NETWORKS;
 import static android.provider.Settings.EXTRA_WIFI_NETWORK_LIST;
 import static android.provider.Settings.EXTRA_WIFI_NETWORK_RESULT_LIST;
 
-import static androidx.activity.result.ActivityResultCallerKt.*;
-
+// import static androidx.activity.result.ActivityResultCallerKt.*;
+// import androidx.activity.result.ActivityResultLauncher;
 import org.apache.cordova.*;
 
 import java.util.List;
@@ -59,8 +59,6 @@ import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.os.Build;
-
-import androidx.activity.result.ActivityResultLauncher;
 
 import java.net.URL;
 import java.net.InetAddress;
