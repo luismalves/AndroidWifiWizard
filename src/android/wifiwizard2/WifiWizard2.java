@@ -312,7 +312,7 @@ public class WifiWizard2 extends CordovaPlugin {
 //            });
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+
         Log.d(TAG, "Entered onActivityResult with resultCode <" + resultCode + "> and requestCode <" + requestCode + ">");
         if (requestCode == OPEN_SETTINGS_WIFI_REQUEST_CODE) {
             Log.d(TAG, "Entered OPEN_SETTINGS_WIFI_REQUEST_CODE");
@@ -340,6 +340,8 @@ public class WifiWizard2 extends CordovaPlugin {
                                     // Handle already exists
                                     openNetworkSettings();
                                     break;
+                                default:
+                                    break;
                             }
                         }
                     }
@@ -348,6 +350,9 @@ public class WifiWizard2 extends CordovaPlugin {
                 // Handle the cancellation
             }
         }
+
+        // Handle other results if exists.
+        super.onActivityResult(requestCode, resultCode, data);
     }
 
     /**
