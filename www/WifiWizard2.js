@@ -86,6 +86,12 @@ var WifiWizard2 = {
     });
   },
 
+  openWifiSettings: function () {
+    return new Promise(function (resolve, reject) {
+      cordova.exec(resolve, reject, "WifiWizard2", "openWifiSettings", []);
+    });
+  },
+
   /**
    * Connect network with specified SSID
    *

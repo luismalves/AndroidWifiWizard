@@ -104,6 +104,7 @@ public class WifiWizard2 extends CordovaPlugin {
     private static final String GET_WIFI_IP_INFO = "getWifiIPInfo";
     private static final String IS_LOCATION_ENABLED = "isLocationEnabled";
     private static final String SWITCH_TO_LOCATION_SETTINGS = "switchToLocationSettings";
+    private static final String OPEN_WIFI_SETTINGS = "openWifiSettings";
 
     private static final int OPEN_SETTINGS_WIFI_REQUEST_CODE = 420;
     private static final int INTENT_CONNECT_WIFI_REQUEST_CODE = 666;
@@ -179,7 +180,6 @@ public class WifiWizard2 extends CordovaPlugin {
         this.passedData = data;
 
         // Actions that do not require WiFi to be enabled
-        // Actions that do not require WiFi to be enabled
         if (action.equals(IS_LOCATION_ENABLED)) {
             this.isLocationEnabled(callbackContext);
             return true;
@@ -231,6 +231,8 @@ public class WifiWizard2 extends CordovaPlugin {
 
             callbackContext.success(result);
             return true;
+        } else if (action.equals(OPEN_WIFI_SETTINGS)) {
+            openNetworkSettings();
         }
 
         boolean wifiIsEnabled = verifyWifiEnabled();
@@ -303,7 +305,7 @@ public class WifiWizard2 extends CordovaPlugin {
         return true;
     }
 
-//    ActivityResultLauncher<String> mGetContent = registerForActivityResult(new GetContent(),
+    //    ActivityResultLauncher<String> mGetContent = registerForActivityResult(new GetContent(),
 //            new ActivityResultCallback<Uri>() {
 //                @Override
 //                public void onActivityResult(Uri uri) {
@@ -326,23 +328,24 @@ public class WifiWizard2 extends CordovaPlugin {
             if (resultCode == RESULT_OK && data != null) {
                 if (API_VERSION >= android.os.Build.VERSION_CODES.Q) {
                     ArrayList<Integer> resultCodes = data.getIntegerArrayListExtra(EXTRA_WIFI_NETWORK_RESULT_LIST);
-                    Log.d(TAG, " - resultCodes obtained - " + resultCodes.toString());
-                    if (resultCodes != null) {
-                        for (int code : resultCodes) {
-                            switch (code) {
-                                case 0: // ADD_WIFI_RESULT_SUCCESS
-                                    // Handle success
-                                    break;
-                                case 1: // ADD_WIFI_RESULT_ADD_OR_UPDATE_FAILED
-                                    // Handle failure
-                                    break;
-                                case 2: // ADD_WIFI_RESULT_ALREADY_EXISTS
-                                    // Handle already exists
-                                    openNetworkSettings();
-                                    break;
-                                default:
-                                    break;
-                            }
+                    Log.d(TAG, " - resultCodes obtained - " + Objects.requireNonNull(resultCodes));
+                    for (int code : resultCodes) {
+                        switch (code) {
+                            case 0: // ADD_WIFI_RESULT_SUCCESS
+                                // Handle success
+                                this.callbackContext.success("ADD_WIFI_RESULT_SUCCESS");
+                                break;
+                            case 1: // ADD_WIFI_RESULT_ADD_OR_UPDATE_FAILED
+                                // Handle failure
+                                this.callbackContext.error("ADD_WIFI_RESULT_ADD_OR_UPDATE_FAILED");
+                                break;
+                            case 2: // ADD_WIFI_RESULT_ALREADY_EXISTS
+                                // Handle already exists
+                                openNetworkSettings();
+                                this.callbackContext.success("ADD_WIFI_RESULT_ALREADY_EXISTS");
+                                break;
+                            default:
+                                break;
                         }
                     }
                 }
